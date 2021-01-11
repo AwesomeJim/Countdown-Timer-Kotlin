@@ -126,5 +126,11 @@ class HomeViewModel : ViewModel() {
         Timber.e("TAG generateRand: "+_tokenString.value)
     }
 
-
+    fun refreshToken(){
+        // changing the timer status to stopped
+        timerStatus = TimerStatus.STOPPED
+        stopCountDownTimer()
+        //doGetToken()
+        generateRand()
+    }
 }

@@ -35,7 +35,7 @@ class HomeFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         binding.btnRefresh.setOnClickListener {
-            //viewModel.refreshToken()
+            viewModel.refreshToken()
         }
 
         viewModel.currentTimeString.observe(viewLifecycleOwner, {
