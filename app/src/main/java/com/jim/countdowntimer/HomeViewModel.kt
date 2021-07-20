@@ -101,7 +101,7 @@ class HomeViewModel : ViewModel() {
      * @param milliSeconds
      * @return HH:mm:ss time formatted string
      */
-    private fun hmsTimeFormatter(milliSeconds: Long): String? {
+    private fun hmsTimeFormatter(milliSeconds: Long): String {
         return String.format(
             "%02d:%02d:%02d",
             TimeUnit.MILLISECONDS.toHours(milliSeconds),
