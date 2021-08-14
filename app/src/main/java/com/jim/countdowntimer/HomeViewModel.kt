@@ -123,7 +123,7 @@ class HomeViewModel : ViewModel() {
         val max = 900000
         val rnd = Random(System.nanoTime())
         _tokenString.value=( min + rnd.nextInt(max)).toString()
-        Timber.e("TAG generateRand: "+_tokenString.value)
+        Timber.e("TAG generateRand:  %s",_tokenString.value)
     }
 
     fun refreshToken(){

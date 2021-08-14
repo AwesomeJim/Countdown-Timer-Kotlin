@@ -31,8 +31,9 @@ class HomeFragment : Fragment() {
         return view
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        this.view = view
         viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         binding.btnRefresh.setOnClickListener {
             viewModel.refreshToken()
@@ -53,11 +54,6 @@ class HomeFragment : Fragment() {
             viewModel.startStop()
         })
         setProgressBarValues()
-
-    }
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        this.view = view
     }
 
     /**
