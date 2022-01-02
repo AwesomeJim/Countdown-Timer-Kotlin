@@ -39,20 +39,20 @@ class HomeFragment : Fragment() {
             viewModel.refreshToken()
         }
 
-        viewModel.currentTimeString.observe(viewLifecycleOwner, {
+        viewModel.currentTimeString.observe(viewLifecycleOwner) {
             binding.textViewTime.text = it
-        })
-        viewModel.currentTime.observe(viewLifecycleOwner, {
+        }
+        viewModel.currentTime.observe(viewLifecycleOwner) {
             binding.progressBarCircle.progress = (it / 1000).toInt()
-        })
-        viewModel.tokenString.observe(viewLifecycleOwner, {
+        }
+        viewModel.tokenString.observe(viewLifecycleOwner) {
             binding.textViewToken.text = it
-        })
-        viewModel.tokenString.observe(viewLifecycleOwner, {
+        }
+        viewModel.tokenString.observe(viewLifecycleOwner) {
             // setProgressBarValues()
             binding.textViewToken.text = it
             viewModel.startStop()
-        })
+        }
         setProgressBarValues()
     }
 
