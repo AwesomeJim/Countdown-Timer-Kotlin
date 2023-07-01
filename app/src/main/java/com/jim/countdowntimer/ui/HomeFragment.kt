@@ -1,4 +1,4 @@
-package com.jim.countdowntimer
+package com.jim.countdowntimer.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.jim.countdowntimer.HomeViewModel
 import com.jim.countdowntimer.databinding.HomeFragmentBinding
 
 class HomeFragment : Fragment() {
