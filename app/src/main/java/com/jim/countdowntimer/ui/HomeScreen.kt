@@ -2,10 +2,8 @@ package com.jim.countdowntimer.ui
 
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -29,11 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,7 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.asFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jim.countdowntimer.HomeViewModel
 import com.jim.countdowntimer.ui.theme.CountDownTimerTheme
@@ -88,47 +82,33 @@ private fun TokenViewPreview() {
 
 @Composable
 fun CircularProgressbar(
-    viewModel:HomeViewModel = viewModel(),
-    number: Float = 60f,
+    viewModel: HomeViewModel = viewModel(),
     numberStyle: TextStyle = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp
     ),
     size: Dp = 200.dp,
-    animationDuration: Int = 1000,
-    animationDelay: Int = 0,
     foregroundIndicatorColor: Color = colorRed,
     backgroundIndicatorColor: Color = greenish,
 ) {
-    val progressValue = (viewModel.tokenMaxTimer / 1000).toFloat()
-    val maxProgressValue =  (viewModel.tokenMaxTimer / 1000).toInt()
-    val currentTime = viewModel.currentTime.asFlow().collectAsState(initial = "").toString()
-    val infiniteTransition = rememberInfiniteTransition(label = "")
 
-    val progressAnimationValue by infiniteTransition.animateFloat(
-        initialValue = 0.0f,
-        targetValue = progressValue,
-        animationSpec = infiniteRepeatable(animation = tween(900)),
-        label = "")
+    val currentTimeString by viewModel.currentTimeString.collectAsStateWithLifecycle()
+    val progress by viewModel.currentTime.collectAsStateWithLifecycle()
 
-        // It remembers the number value
-    var numberR by remember {
-        mutableStateOf(-1f)
-    }
-
-    // Number Animation
-    val animateNumber = animateFloatAsState(
-        targetValue = progressValue,
+    // animation
+    val progressAnimate by animateFloatAsState(
+        targetValue = progress.toFloat() / 60000, //turn  range into 0.0 - 1.0 by divide the progress value by 60000.
         animationSpec = tween(
-            durationMillis = animationDuration,
-            delayMillis = animationDelay
+            durationMillis = 300,//animation duration
+            delayMillis = 50,//delay before animation start
+            easing = LinearOutSlowInEasing
         ), label = ""
     )
-
+    
     // This is to start the animation when the activity is opened
     LaunchedEffect(Unit) {
-        numberR = number
+        viewModel.refreshToken()
     }
 
     Box(
@@ -142,12 +122,12 @@ fun CircularProgressbar(
             color = foregroundIndicatorColor,
             backgroundColor = backgroundIndicatorColor,
             strokeWidth = 10.dp,
-            progress = progressAnimationValue
+            progress = progressAnimate
         )
         // Text that shows number inside the circle
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = currentTime,
+                text = currentTimeString,
                 style = numberStyle
             )
             Text(
@@ -159,13 +139,13 @@ fun CircularProgressbar(
 }
 
 @Composable
-private fun ButtonProgressbar(
+private fun RefreshTokenButton(
     modifier: Modifier = Modifier,
     onClickButton: () -> Unit,
     color: Color
 ) {
     OutlinedButton(
-        modifier = Modifier.size(width = 160.dp, height = 60.dp),
+        modifier = modifier.size(width = 160.dp, height = 60.dp),
         border = BorderStroke(1.dp, color),
         shape = RoundedCornerShape(percent = 25),
         colors = ButtonDefaults.buttonColors(
@@ -190,9 +170,44 @@ private fun ButtonProgressbar(
     }
 }
 
+@Composable
+fun TokenScreen(
+    viewModel: HomeViewModel = viewModel(),
+    modifier: Modifier = Modifier
+) {
+    val tokenString by viewModel.tokenString.collectAsStateWithLifecycle()
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        TokenView(tokenString)
+        Spacer(modifier = Modifier.size(24.dp))
+        CircularProgressbar()
+        Spacer(modifier = Modifier.size(24.dp))
+        RefreshTokenButton(onClickButton = {
+            viewModel.refreshToken()
+        }, color = colorRed)
+    }
 
-@Preview(name = "Token Light",
-    showBackground = true)
+}
+
+@Preview(
+    name = "Token Screen",
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+private fun TokenScreenPreview() {
+    CountDownTimerTheme {
+        TokenScreen()
+    }
+}
+
+@Preview(
+    name = "Token Light",
+    showBackground = true
+)
 @Preview(
     name = "Token dark",
     showBackground = true,
@@ -201,7 +216,7 @@ private fun ButtonProgressbar(
 @Composable
 private fun ButtonProgressbarPreview() {
     CountDownTimerTheme {
-        ButtonProgressbar(onClickButton = {},color = colorRed)
+        RefreshTokenButton(onClickButton = {}, color = colorRed)
     }
 }
 

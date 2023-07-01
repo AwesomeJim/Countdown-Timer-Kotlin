@@ -5,9 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.jim.countdowntimer.HomeViewModel
 import com.jim.countdowntimer.databinding.HomeFragmentBinding
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
@@ -39,20 +43,28 @@ class HomeFragment : Fragment() {
         binding.btnRefresh.setOnClickListener {
             viewModel.refreshToken()
         }
-
-        viewModel.currentTimeString.observe(viewLifecycleOwner) {
-            binding.textViewTime.text = it
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentTimeString.collect {
+                    binding.textViewTime.text = it
+                }
+            }
         }
-        viewModel.currentTime.observe(viewLifecycleOwner) {
-            binding.progressBarCircle.progress = (it / 1000).toInt()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.currentTime.collect {
+                    binding.progressBarCircle.progress = (it / 1000).toInt()
+                }
+            }
         }
-        viewModel.tokenString.observe(viewLifecycleOwner) {
-            binding.textViewToken.text = it
-        }
-        viewModel.tokenString.observe(viewLifecycleOwner) {
-            // setProgressBarValues()
-            binding.textViewToken.text = it
-            viewModel.startStop()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.tokenString.collect {
+                    // setProgressBarValues()
+                    binding.textViewToken.text = it
+                    viewModel.startStop()
+                }
+            }
         }
         setProgressBarValues()
     }

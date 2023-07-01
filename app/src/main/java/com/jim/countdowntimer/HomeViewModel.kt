@@ -1,11 +1,15 @@
 package com.jim.countdowntimer
 
 import android.os.CountDownTimer
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import timber.log.Timber
-import java.util.*
+import java.util.Random
 import java.util.concurrent.TimeUnit
 
 class HomeViewModel : ViewModel() {
@@ -17,18 +21,30 @@ class HomeViewModel : ViewModel() {
         STARTED, STOPPED
     }
 
-    private val _currentTime = MutableLiveData<Long>()
-    val currentTime: LiveData<Long>
-        get() = _currentTime
+    private val _currentTime = MutableStateFlow<Long>(0)
+    val currentTime: StateFlow<Long>
+        get() = _currentTime.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = 0
+        )
 
-    private val _currentTimeString = MutableLiveData<String>()
-    val currentTimeString: LiveData<String>
-        get() = _currentTimeString
+    private val _currentTimeString = MutableStateFlow<String>("00:00:00")
+    val currentTimeString: StateFlow<String>
+        get() = _currentTimeString.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
 
 
-    private val _tokenString = MutableLiveData<String>()
-    val tokenString: LiveData<String>
-        get() = _tokenString
+    private val _tokenString = MutableStateFlow<String>("Test Token")
+    val tokenString: StateFlow<String>
+        get() = _tokenString.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ""
+        )
 
 
     private var timerStatus = TimerStatus.STOPPED
@@ -42,15 +58,15 @@ class HomeViewModel : ViewModel() {
     private fun startCountDownTimer() {
         countDownTimer = object : CountDownTimer(timeCountInMilliSeconds, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                _currentTimeString.value = hmsTimeFormatter(millisUntilFinished)
-                _currentTime.value = millisUntilFinished
+                _currentTimeString.update { hmsTimeFormatter(millisUntilFinished) }
+                _currentTime.update {millisUntilFinished}
             }
 
             override fun onFinish() {
                 // changing the timer status to stopped
                 timerStatus = TimerStatus.STOPPED
                 // doGetToken()
-                generateRand()
+                refreshToken()
             }
         }.start()
     }
@@ -86,14 +102,9 @@ class HomeViewModel : ViewModel() {
      * method to stop count down timer
      */
     private fun stopCountDownTimer() {
-        countDownTimer!!.cancel()
+        countDownTimer?.cancel()
     }
 
-    init {
-        //email = PreferencesUtils().getPrefEmail(context).toString()
-        //val deviceID = getDeviceId(context)
-        generateRand()
-    }
 
     /**
      * method to convert millisecond to time format
@@ -118,15 +129,16 @@ class HomeViewModel : ViewModel() {
         )
     }
 
-    private fun generateRand(){
+    private fun generateRand() {
         val min = 100000
         val max = 900000
         val rnd = Random(System.nanoTime())
-        _tokenString.value=( min + rnd.nextInt(max)).toString()
-        Timber.e("TAG generateRand:  %s",_tokenString.value)
+        _tokenString.update {  (min + rnd.nextInt(max)).toString()}
+        startStop()
+        Timber.e("TAG generateRand:  %s", _tokenString.value)
     }
 
-    fun refreshToken(){
+    fun refreshToken() {
         // changing the timer status to stopped
         timerStatus = TimerStatus.STOPPED
         stopCountDownTimer()
