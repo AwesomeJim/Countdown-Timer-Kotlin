@@ -145,4 +145,7 @@ class HomeViewModel : ViewModel() {
         //doGetToken()
         generateRand()
     }
+    init {
+        refreshToken()
+    }
 }

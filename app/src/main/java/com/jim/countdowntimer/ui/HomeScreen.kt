@@ -26,7 +26,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,7 +81,7 @@ private fun TokenViewPreview() {
 
 @Composable
 fun CircularProgressbar(
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel?,
     numberStyle: TextStyle = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,
@@ -93,8 +92,8 @@ fun CircularProgressbar(
     backgroundIndicatorColor: Color = greenish,
 ) {
 
-    val currentTimeString by viewModel.currentTimeString.collectAsStateWithLifecycle()
-    val progress by viewModel.currentTime.collectAsStateWithLifecycle()
+    val currentTimeString by viewModel?.currentTimeString!!.collectAsStateWithLifecycle()
+    val progress by viewModel?.currentTime!!.collectAsStateWithLifecycle()
 
     // animation
     val progressAnimate by animateFloatAsState(
@@ -105,11 +104,7 @@ fun CircularProgressbar(
             easing = LinearOutSlowInEasing
         ), label = ""
     )
-    
-    // This is to start the animation when the activity is opened
-    LaunchedEffect(Unit) {
-        viewModel.refreshToken()
-    }
+
 
     Box(
         contentAlignment = Alignment.Center,
@@ -176,6 +171,10 @@ fun TokenScreen(
     modifier: Modifier = Modifier
 ) {
     val tokenString by viewModel.tokenString.collectAsStateWithLifecycle()
+    // This is to start the animation when the activity is opened
+//    LaunchedEffect(Unit) {
+
+//    }
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -183,7 +182,7 @@ fun TokenScreen(
     ) {
         TokenView(tokenString)
         Spacer(modifier = Modifier.size(24.dp))
-        CircularProgressbar()
+        CircularProgressbar(viewModel = viewModel)
         Spacer(modifier = Modifier.size(24.dp))
         RefreshTokenButton(onClickButton = {
             viewModel.refreshToken()
@@ -231,6 +230,6 @@ private fun ButtonProgressbarPreview() {
 @Composable
 private fun CustomLinearProgressIndicatorPreview() {
     CountDownTimerTheme {
-        CircularProgressbar()
+        CircularProgressbar(viewModel = viewModel())
     }
 }
